@@ -26,8 +26,12 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * This is the config file loader for the global property provided by the ballerina global config.
+ */
 public class ConfigLoader {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigLoader.class);
@@ -42,10 +46,13 @@ public class ConfigLoader {
             return null;
         } else {
             File initialFile = new File(configLocation);
-            try {
-                InputStream targetStream = new FileInputStream(initialFile);
+            try (InputStream targetStream = new FileInputStream(initialFile)) {
                 return new Yaml().loadAs(targetStream, OpenTracingConfig.class);
             } catch (FileNotFoundException e) {
+                logger.error("Unable to load the file provided with global configuration - " +
+                        Constants.BALLERINA_TRACE_CONFIG_KEY, e);
+                return null;
+            } catch (IOException e) {
                 logger.error("Unable to load the file provided with global configuration - " +
                         Constants.BALLERINA_TRACE_CONFIG_KEY, e);
                 return null;
