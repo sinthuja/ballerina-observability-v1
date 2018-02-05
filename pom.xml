@@ -1,0 +1,161 @@
+<!--
+  ~ Copyright (c) 2016, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+  ~
+  ~ WSO2 Inc. licenses this file to you under the Apache License,
+  ~ Version 2.0 (the "License"); you may not use this file except
+  ~ in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.ballerina.platform</groupId>
+    <artifactId>ballerina-observability-parent</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>Ballerina Observability - Parent</name>
+
+    <url>http://ballerinalang.org</url>
+
+    <scm>
+        <url>https://github.com/ballerinalang/ballerina.git</url>
+        <developerConnection>scm:git:https://github.com/ballerinalang/ballerina.git</developerConnection>
+        <connection>scm:git:https://github.com/ballerinalang/ballerina.git</connection>
+        <tag>HEAD</tag>
+    </scm>
+
+    <repositories>
+        <repository>
+            <id>wso2.releases</id>
+            <name>WSO2 Releases Repository</name>
+            <url>http://maven.wso2.org/nexus/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>wso2.snapshots</id>
+            <name>WSO2 Snapshot Repository</name>
+            <url>http://maven.wso2.org/nexus/content/repositories/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>daily</updatePolicy>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-api</artifactId>
+                <version>${open.tracing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentracing</groupId>
+                <artifactId>opentracing-util</artifactId>
+                <version>${open.tracing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ballerinalang</groupId>
+                <artifactId>ballerina-config</artifactId>
+                <version>${ballerina.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snake.yaml.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin><!-- Overridden from parent pom to exclude generated sources -->
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>findbugs-maven-plugin</artifactId>
+                    <configuration>
+                        <effort>Max</effort>
+                        <threshold>Low</threshold>
+                        <xmlOutput>true</xmlOutput>
+                        <findbugsXmlOutputDirectory>${project.build.directory}/findbugs
+                        </findbugsXmlOutputDirectory>
+                        <excludeFilterFile>${maven.findbugsplugin.version.exclude}</excludeFilterFile>
+                        <!--Exclude generated sources-->
+                    </configuration>
+                    <version>${maven.findbugsplugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>analyze-compile</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>${mvn.exec.plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <properties>
+        <ballerina.version>0.96.1-SNAPSHOT</ballerina.version>
+        <ballerina.package.export.version>0.8.0</ballerina.package.export.version>
+        <maven.findbugsplugin.version.exclude>findbugs-exclude.xml</maven.findbugsplugin.version.exclude>
+        <commons-net.version>3.6</commons-net.version>
+        <cobertura.version>2.7</cobertura.version>
+
+        <native.constructs.provider.package>org.ballerinalang.nativeimpl</native.constructs.provider.package>
+        <native.constructs.provider.class>BallerinaNativeConstructsProvider</native.constructs.provider.class>
+        <ballerina.package.repository.provider.class>BallerinaBuiltinPackageRepository
+        </ballerina.package.repository.provider.class>
+        <mvn.processor.plugin.version>2.2.4</mvn.processor.plugin.version>
+        <mvn.exec.plugin.version>1.6.0</mvn.exec.plugin.version>
+        <ant.contrib.plugin.version>1.0b3</ant.contrib.plugin.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <open.tracing.version>0.30.0</open.tracing.version>
+        <slf4j.version>1.7.22</slf4j.version>
+        <snake.yaml.version>1.19</snake.yaml.version>
+    </properties>
+
+    <modules>
+        <module>modules/tracing-core</module>
+    </modules>
+
+</project>
