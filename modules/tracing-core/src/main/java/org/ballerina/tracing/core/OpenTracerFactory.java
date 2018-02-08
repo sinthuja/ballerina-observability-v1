@@ -18,8 +18,6 @@
 
 package org.ballerina.tracing.core;
 
-import io.opentracing.ActiveSpan;
-import io.opentracing.BaseSpan;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -126,18 +124,18 @@ public class OpenTracerFactory {
             if (spanContextEntry.getValue() != null) {
                 if (spanContextEntry.getValue() instanceof SpanContext) {
                     spanBuilder = spanBuilder.asChildOf((SpanContext) spanContextEntry.getValue());
-                } else if (spanContextEntry.getValue() instanceof BaseSpan) {
-                    spanBuilder = spanBuilder.asChildOf((BaseSpan) spanContextEntry.getValue());
+                } else if (spanContextEntry.getValue() instanceof Span) {
+                    spanBuilder = spanBuilder.asChildOf((Span) spanContextEntry.getValue());
                 } else {
                     throw new UnknownSpanContextTypeException("Unknown span context field - " +
                             spanContextEntry.getValue().getClass()
                             + "! Open tracing can span can be build only by using "
-                            + SpanContext.class + " or " + BaseSpan.class);
+                            + SpanContext.class + " or " + Span.class);
                 }
             }
-            Span span = spanBuilder.startManual();
+            Span span = spanBuilder.start();
             if (makeActive) {
-                tracer.makeActive(span);
+                tracer.scopeManager().activate(span, false);
             }
             spanList.add(span);
         }
@@ -157,8 +155,8 @@ public class OpenTracerFactory {
         return activeSpanMap;
     }
 
-    public Map<String, ActiveSpan> getActiveSpans(Set<String> tracerNames) {
-        Map<String, ActiveSpan> activeSpanMap = new HashMap<>();
+    public Map<String, Span> getActiveSpans(Set<String> tracerNames) {
+        Map<String, Span> activeSpanMap = new HashMap<>();
         for (String tracerName : tracerNames) {
             activeSpanMap.put(tracerName.toLowerCase(Locale.ENGLISH),
                     this.tracers.get(tracerName.toLowerCase(Locale.ENGLISH)).activeSpan());
@@ -167,8 +165,8 @@ public class OpenTracerFactory {
     }
 
 
-    public void inject(Map<String, ActiveSpan> activeSpanMap, Format<TextMap> format, TextMap carrier) {
-        for (Map.Entry<String, ActiveSpan> activeSpanEntry : activeSpanMap.entrySet()) {
+    public void inject(Map<String, Span> activeSpanMap, Format<TextMap> format, TextMap carrier) {
+        for (Map.Entry<String, Span> activeSpanEntry : activeSpanMap.entrySet()) {
             Tracer tracer = this.tracers.get(activeSpanEntry.getKey());
             if (tracer != null) {
                 tracer.inject(activeSpanEntry.getValue().context(), format, carrier);
@@ -180,10 +178,11 @@ public class OpenTracerFactory {
         finishSpan(span);
         for (Map.Entry<String, Object> parentSpan : parent.entrySet()) {
             if (parentSpan.getValue() != null) {
-                if (parentSpan.getValue() instanceof ActiveSpan) {
-                    ((ActiveSpan) parentSpan.getValue()).capture().activate();
+                if (parentSpan.getValue() instanceof Span) {
+                    this.tracers.get(parentSpan.getKey().toLowerCase(Locale.ENGLISH)).scopeManager().
+                            activate((Span) parentSpan.getValue(), false);
                 } else {
-                    throw new UnknownSpanContextTypeException("Only " + ActiveSpan.class
+                    throw new UnknownSpanContextTypeException("Only " + Span.class
                             + " as parent span can be captured " +
                             "and activated! But found " + parentSpan.getClass());
                 }

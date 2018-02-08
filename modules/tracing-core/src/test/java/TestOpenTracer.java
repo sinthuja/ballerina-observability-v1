@@ -16,7 +16,7 @@
 *
 */
 
-import io.opentracing.ActiveSpan;
+import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -29,31 +29,34 @@ import java.util.Properties;
 public class TestOpenTracer implements OpenTracer {
     @Override
     public Tracer getTracer(String tracerName, Properties configProperties) throws InvalidConfigurationException {
-        return new Tracer() {
-            @Override
-            public SpanBuilder buildSpan(String s) {
-                return null;
-            }
+        return new TestTracer();
+    }
+}
 
-            @Override
-            public <C> void inject(SpanContext spanContext, Format<C> format, C c) {
+final class TestTracer implements Tracer {
 
-            }
+    @Override
+    public ScopeManager scopeManager() {
+        return null;
+    }
 
-            @Override
-            public <C> SpanContext extract(Format<C> format, C c) {
-                return null;
-            }
+    @Override
+    public Span activeSpan() {
+        return null;
+    }
 
-            @Override
-            public ActiveSpan activeSpan() {
-                return null;
-            }
+    @Override
+    public SpanBuilder buildSpan(String operationName) {
+        return null;
+    }
 
-            @Override
-            public ActiveSpan makeActive(Span span) {
-                return null;
-            }
-        };
+    @Override
+    public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {
+
+    }
+
+    @Override
+    public <C> SpanContext extract(Format<C> format, C carrier) {
+        return null;
     }
 }
