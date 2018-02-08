@@ -39,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * This is the class which holds the tracers that are enabled, and bridges all tracers with instrumented code.
@@ -79,7 +78,7 @@ public class OpenTracerFactory {
         }
     }
 
-    public TracerConfig getTracingConfig(String tracerName) {
+    private TracerConfig getTracingConfig(String tracerName) {
         return this.openTracingConfig.getTracer(tracerName);
     }
 
@@ -145,7 +144,7 @@ public class OpenTracerFactory {
     }
 
 
-    public void finishSpan(List<Span> spanList) {
+    private void finishSpan(List<Span> spanList) {
         spanList.forEach(Span::finish);
     }
 
@@ -165,16 +164,6 @@ public class OpenTracerFactory {
             return null;
         }
     }
-
-    public Map<String, ActiveSpan> getActiveSpans(Set<String> tracerNames) {
-        Map<String, ActiveSpan> activeSpanMap = new HashMap<>();
-        for (String tracerName : tracerNames) {
-            activeSpanMap.put(tracerName.toLowerCase(Locale.ENGLISH),
-                    this.tracers.get(tracerName.toLowerCase(Locale.ENGLISH)).activeSpan());
-        }
-        return activeSpanMap;
-    }
-
 
     public void inject(Map<String, ActiveSpan> activeSpanMap, Format<TextMap> format, TextMap carrier) {
         for (Map.Entry<String, ActiveSpan> activeSpanEntry : activeSpanMap.entrySet()) {
