@@ -230,18 +230,18 @@
         <ant.contrib.plugin.version>1.0b3</ant.contrib.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <open.tracing.version>0.30.0</open.tracing.version>
+        <open.tracing.version>0.31.0</open.tracing.version>
         <slf4j.version>1.7.22</slf4j.version>
         <snake.yaml.version>1.19</snake.yaml.version>
         <ballerina.lang.version>0.96.1-SNAPSHOT</ballerina.lang.version>
         <testng.version>6.9.10</testng.version>
 
         <!--Zipkin open tracing libraries-->
-        <brave.open.tracing.version>0.22.1</brave.open.tracing.version>
-        <zipkin.reporter.version>2.2.2</zipkin.reporter.version>
+        <brave.open.tracing.version>0.26.0</brave.open.tracing.version>
+        <zipkin.reporter.version>2.3.1</zipkin.reporter.version>
 
         <!--Jaeger open tracing libraries-->
-        <jaeger.version>0.21.0</jaeger.version>
+        <jaeger.version>0.24.0</jaeger.version>
     </properties>
 
     <modules>
