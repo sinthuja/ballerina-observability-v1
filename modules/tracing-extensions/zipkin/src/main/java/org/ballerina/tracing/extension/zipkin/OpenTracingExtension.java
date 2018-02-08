@@ -59,7 +59,7 @@ public class OpenTracingExtension implements OpenTracer {
                         Constants.REPORTING_API_CONTEXT);
         AsyncReporter reporter = AsyncReporter.create(sender);
         return BraveTracer.create(Tracing.newBuilder()
-                .localServiceName("Ballerina")
+                .localServiceName(org.ballerina.tracing.core.Constants.OPEN_TRACING_COMPONENT_NAME)
                 .spanReporter(reporter)
                 .build());
     }

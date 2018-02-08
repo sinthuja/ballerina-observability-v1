@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * This is the class which holds the tracers that are enabled, and bridges all tracers with instrumented code.
@@ -77,7 +76,7 @@ public class OpenTracerFactory {
         }
     }
 
-    public TracerConfig getTracingConfig(String tracerName) {
+    private TracerConfig getTracingConfig(String tracerName) {
         return this.openTracingConfig.getTracer(tracerName);
     }
 
@@ -143,25 +142,25 @@ public class OpenTracerFactory {
     }
 
 
-    public void finishSpan(List<Span> spanList) {
+    private void finishSpan(List<Span> spanList) {
         spanList.forEach(Span::finish);
     }
 
     public Map<String, Object> getActiveSpans() {
         Map<String, Object> activeSpanMap = new HashMap<>();
+        boolean isActiveExists = false;
         for (Map.Entry<String, Tracer> tracerEntry : this.tracers.entrySet()) {
+            Span activeSpan = tracerEntry.getValue().activeSpan();
+            if (activeSpan != null) {
+                isActiveExists = true;
+            }
             activeSpanMap.put(tracerEntry.getKey(), tracerEntry.getValue().activeSpan());
         }
-        return activeSpanMap;
-    }
-
-    public Map<String, Span> getActiveSpans(Set<String> tracerNames) {
-        Map<String, Span> activeSpanMap = new HashMap<>();
-        for (String tracerName : tracerNames) {
-            activeSpanMap.put(tracerName.toLowerCase(Locale.ENGLISH),
-                    this.tracers.get(tracerName.toLowerCase(Locale.ENGLISH)).activeSpan());
+        if (isActiveExists) {
+            return activeSpanMap;
+        } else {
+            return null;
         }
-        return activeSpanMap;
     }
 
 
@@ -176,15 +175,17 @@ public class OpenTracerFactory {
 
     public void finishSpan(List<Span> span, Map<String, Object> parent) {
         finishSpan(span);
-        for (Map.Entry<String, Object> parentSpan : parent.entrySet()) {
-            if (parentSpan.getValue() != null) {
-                if (parentSpan.getValue() instanceof Span) {
+        if (parent != null) {
+            for (Map.Entry<String, Object> parentSpan : parent.entrySet()) {
+                if (parentSpan.getValue() != null) {
+                    if (parentSpan.getValue() instanceof Span) {
                     this.tracers.get(parentSpan.getKey().toLowerCase(Locale.ENGLISH)).scopeManager().
                             activate((Span) parentSpan.getValue(), false);
-                } else {
-                    throw new UnknownSpanContextTypeException("Only " + Span.class
-                            + " as parent span can be captured " +
-                            "and activated! But found " + parentSpan.getClass());
+                    } else {
+                        throw new UnknownSpanContextTypeException("Only " + Span.class
+                                + " as parent span can be captured " +
+                                "and activated! But found " + parentSpan.getClass());
+                    }
                 }
             }
         }

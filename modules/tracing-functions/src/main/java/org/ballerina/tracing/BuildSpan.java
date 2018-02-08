@@ -52,16 +52,25 @@ public class BuildSpan extends AbstractNativeFunction {
     public BValue[] execute(Context context) {
         BStruct httpRequest = (BStruct) getRefArgument(context, 0);
         BMap tags = (BMap) getRefArgument(context, 1);
-        String spanName =  getStringArgument(context, 0);
+        String spanName = getStringArgument(context, 0);
         boolean makeActive = getBooleanArgument(context, 0);
 
-        HTTPCarbonMessage carbonMessage = HttpUtil.getCarbonMsg(httpRequest, null);
-        Map<String, Object> spanContext = OpenTracerFactory.getInstance().extract(null,
-                new RequestExtractor(carbonMessage.getHeaders().iteratorAsString()));
+        boolean hasParent = true;
+        Map<String, Object> spanContext = OpenTracerFactory.getInstance().getActiveSpans();
+        if (spanContext == null) {
+            HTTPCarbonMessage carbonMessage = HttpUtil.getCarbonMsg(httpRequest, null);
+            spanContext = OpenTracerFactory.getInstance().extract(null,
+                    new RequestExtractor(carbonMessage.getHeaders().iteratorAsString()));
+            hasParent = false;
+        }
         List<Span> spanList = OpenTracerFactory.getInstance().buildSpan(spanName, spanContext,
                 Utils.toStringMap(tags),
                 makeActive);
         //TODO: get id from the invocationContext, and pass it.
-        return getBValues(new BString(SpanHolder.getInstance().onBuildSpan("xxxxxxx", spanList)));
+        if (hasParent) {
+            return getBValues(new BString(SpanHolder.getInstance().onBuildSpan("xxxxxxx", spanList, spanContext)));
+        } else {
+            return getBValues(new BString(SpanHolder.getInstance().onBuildSpan("xxxxxxx", spanList, null)));
+        }
     }
 }

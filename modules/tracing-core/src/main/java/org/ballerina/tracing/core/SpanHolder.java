@@ -30,7 +30,7 @@ import java.util.UUID;
 public class SpanHolder {
 
     private static final SpanHolder spanHolder = new SpanHolder();
-    private Map<String, Map<String, List<Span>>> spanCache;
+    private Map<String, Map<String, SpanReference>> spanCache;
 
     private SpanHolder() {
         spanCache = new HashMap<>();
@@ -40,9 +40,9 @@ public class SpanHolder {
         return spanHolder;
     }
 
-    public String onBuildSpan(String invocationId, List<Span> span) {
+    public String onBuildSpan(String invocationId, List<Span> span, Map<String, Object> parent) {
         String spanId = UUID.randomUUID().toString();
-        Map<String, List<Span>> spans = spanCache.get(invocationId);
+        Map<String, SpanReference> spans = spanCache.get(invocationId);
         if (spans == null) {
             synchronized (this) {
                 spans = spanCache.get(invocationId);
@@ -52,13 +52,13 @@ public class SpanHolder {
                 }
             }
         }
-        spans.put(spanId, span);
+        spans.put(spanId, new SpanReference(span, parent));
         return spanId;
     }
 
-    public List<Span> onFinishSpan(String invocationId, String spanId) {
-        Map<String, List<Span>> spans = spanCache.get(invocationId);
-        List<Span> span = null;
+    public SpanReference onFinishSpan(String invocationId, String spanId) {
+        Map<String, SpanReference> spans = spanCache.get(invocationId);
+        SpanReference span = null;
         if (spans != null) {
             span = spans.remove(spanId);
             if (spans.isEmpty()) {
@@ -66,5 +66,26 @@ public class SpanHolder {
             }
         }
         return span;
+    }
+
+    /**
+     * This is the class holds the reference of the spans that are created and the parent of the spans.
+     */
+    public static class SpanReference {
+        private List<Span> spans;
+        private Map<String, Object> parent;
+
+        public SpanReference(List<Span> spans, Map<String, Object> parent) {
+            this.spans = spans;
+            this.parent = parent;
+        }
+
+        public List<Span> getSpans() {
+            return spans;
+        }
+
+        public Map<String, Object> getParent() {
+            return parent;
+        }
     }
 }
