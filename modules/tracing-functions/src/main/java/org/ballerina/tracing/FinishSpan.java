@@ -17,7 +17,6 @@
 */
 package org.ballerina.tracing;
 
-import io.opentracing.Span;
 import org.ballerina.tracing.core.OpenTracerFactory;
 import org.ballerina.tracing.core.SpanHolder;
 import org.ballerinalang.bre.Context;
@@ -27,8 +26,6 @@ import org.ballerinalang.model.values.BValue;
 import org.ballerinalang.natives.AbstractNativeFunction;
 import org.ballerinalang.natives.annotations.BallerinaFunction;
 import org.ballerinalang.natives.annotations.ReturnType;
-
-import java.util.List;
 
 /**
  * This is function which implements the finish span method for tracing.
@@ -45,8 +42,8 @@ public class FinishSpan extends AbstractNativeFunction {
     @Override
     public BValue[] execute(Context context) {
         String spanId = getStringArgument(context, 0);
-        List<Span> spanList = SpanHolder.getInstance().onFinishSpan("xxxxxxx", spanId);
-        OpenTracerFactory.getInstance().finishSpan(spanList);
+        SpanHolder.SpanReference spanRef = SpanHolder.getInstance().onFinishSpan("xxxxxxx", spanId);
+        OpenTracerFactory.getInstance().finishSpan(spanRef.getSpans(), spanRef.getParent());
         return getBValues(new BBoolean(true));
     }
 

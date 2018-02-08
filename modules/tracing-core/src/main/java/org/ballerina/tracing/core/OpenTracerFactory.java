@@ -151,10 +151,19 @@ public class OpenTracerFactory {
 
     public Map<String, Object> getActiveSpans() {
         Map<String, Object> activeSpanMap = new HashMap<>();
+        boolean isActiveExists = false;
         for (Map.Entry<String, Tracer> tracerEntry : this.tracers.entrySet()) {
+            ActiveSpan activeSpan = tracerEntry.getValue().activeSpan();
+            if (activeSpan != null) {
+                isActiveExists = true;
+            }
             activeSpanMap.put(tracerEntry.getKey(), tracerEntry.getValue().activeSpan());
         }
-        return activeSpanMap;
+        if (isActiveExists) {
+            return activeSpanMap;
+        } else {
+            return null;
+        }
     }
 
     public Map<String, ActiveSpan> getActiveSpans(Set<String> tracerNames) {
@@ -178,14 +187,16 @@ public class OpenTracerFactory {
 
     public void finishSpan(List<Span> span, Map<String, Object> parent) {
         finishSpan(span);
-        for (Map.Entry<String, Object> parentSpan : parent.entrySet()) {
-            if (parentSpan.getValue() != null) {
-                if (parentSpan.getValue() instanceof ActiveSpan) {
-                    ((ActiveSpan) parentSpan.getValue()).capture().activate();
-                } else {
-                    throw new UnknownSpanContextTypeException("Only " + ActiveSpan.class
-                            + " as parent span can be captured " +
-                            "and activated! But found " + parentSpan.getClass());
+        if (parent != null) {
+            for (Map.Entry<String, Object> parentSpan : parent.entrySet()) {
+                if (parentSpan.getValue() != null) {
+                    if (parentSpan.getValue() instanceof ActiveSpan) {
+                        ((ActiveSpan) parentSpan.getValue()).capture().activate();
+                    } else {
+                        throw new UnknownSpanContextTypeException("Only " + ActiveSpan.class
+                                + " as parent span can be captured " +
+                                "and activated! But found " + parentSpan.getClass());
+                    }
                 }
             }
         }
