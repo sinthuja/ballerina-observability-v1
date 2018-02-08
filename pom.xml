@@ -125,7 +125,20 @@
                 <artifactId>zipkin-sender-okhttp3</artifactId>
                 <version>${zipkin.reporter.version}</version>
             </dependency>
+            <!--End of Zipkin dependencies-->
 
+            <!--Start of Jaeger dependencies-->
+            <dependency>
+                <groupId>com.uber.jaeger</groupId>
+                <artifactId>jaeger-core</artifactId>
+                <version>${jaeger.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.uber.jaeger</groupId>
+                <artifactId>jaeger-thrift</artifactId>
+                <version>${jaeger.version}</version>
+            </dependency>
+            <!--End of Jaeger dependencies-->
 
         </dependencies>
     </dependencyManagement>
@@ -226,6 +239,9 @@
         <!--Zipkin open tracing libraries-->
         <brave.open.tracing.version>0.22.1</brave.open.tracing.version>
         <zipkin.reporter.version>2.2.2</zipkin.reporter.version>
+
+        <!--Jaeger open tracing libraries-->
+        <jaeger.version>0.21.0</jaeger.version>
     </properties>
 
     <modules>
