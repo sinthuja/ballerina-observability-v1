@@ -15,15 +15,13 @@
 * under the License.
 *
 */
-package org.ballerina.platform.tracing.core;
+
+package org.ballerina.tracing.core.config;
 
 /**
- * This is the exception class which is thrown when the span context is unknown for
- * {@link OpenTracerFactory}
+ * This provides the options for the tracing depth that can be configured.
+ *
  */
-public class UnknownSpanContextTypeException extends RuntimeException {
-
-    public UnknownSpanContextTypeException(String ex) {
-        super(ex);
-    }
+public enum TracingDepth {
+    SERVICE_LEVEL, FUNCTION_LEVEL, NONE
 }

@@ -22,44 +22,38 @@
 
     <parent>
         <groupId>org.ballerina.platform</groupId>
-        <artifactId>ballerina-observability-parent</artifactId>
+        <artifactId>tracing-extensions</artifactId>
         <version>1.0.0-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>tracing-core</artifactId>
+    <artifactId>tracing-zipkin-extensions</artifactId>
     <packaging>jar</packaging>
-    <name>Ballerina Observability - Tracing Core</name>
+    <name>Ballerina Observability - Tracing Zipkin Extensions</name>
     <url>http://ballerina-lang.org</url>
 
     <dependencies>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <!-- Open tracing libraries -->
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing</groupId>
-            <artifactId>opentracing-util</artifactId>
-        </dependency>
-        <!-- End Open tracing libraries -->
-        <dependency>
-            <groupId>org.ballerinalang</groupId>
-            <artifactId>ballerina-config</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing.brave</groupId>
+            <artifactId>brave-opentracing</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-reporter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-sender-okhttp3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.ballerina.platform</groupId>
+            <artifactId>tracing-core</artifactId>
         </dependency>
     </dependencies>
 
@@ -83,5 +77,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

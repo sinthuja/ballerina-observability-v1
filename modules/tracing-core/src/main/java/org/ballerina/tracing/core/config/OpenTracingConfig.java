@@ -16,7 +16,8 @@
 *
 */
 
-package org.ballerina.platform.tracing.core.config;
+package org.ballerina.tracing.core.config;
+
 
 import java.util.Set;
 
@@ -25,6 +26,8 @@ import java.util.Set;
  */
 
 public class OpenTracingConfig {
+
+    private TracingDepth depth;
 
     private Set<TracerConfig> tracers;
 
@@ -45,5 +48,16 @@ public class OpenTracingConfig {
             }
         }
         return null;
+    }
+
+    public TracingDepth getDepth() {
+        if (depth == null) {
+            depth = TracingDepth.SERVICE_LEVEL;
+        }
+        return depth;
+    }
+
+    public void setDepth(TracingDepth depth) {
+        this.depth = depth;
     }
 }

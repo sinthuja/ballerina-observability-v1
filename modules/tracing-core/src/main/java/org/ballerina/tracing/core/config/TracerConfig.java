@@ -15,7 +15,7 @@
 * under the License.
 *
 */
-package org.ballerina.platform.tracing.core.config;
+package org.ballerina.tracing.core.config;
 
 
 import java.util.Properties;

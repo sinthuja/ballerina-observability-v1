@@ -87,6 +87,46 @@
                 <artifactId>snakeyaml</artifactId>
                 <version>${snake.yaml.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.ballerina.platform</groupId>
+                <artifactId>tracing-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ballerinalang</groupId>
+                <artifactId>ballerina-core</artifactId>
+                <version>${ballerina.lang.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.ballerinalang</groupId>
+                <artifactId>ballerina-http</artifactId>
+                <version>${ballerina.lang.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${testng.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!--Zipkin extension dependencies-->
+            <dependency>
+                <groupId>io.opentracing.brave</groupId>
+                <artifactId>brave-opentracing</artifactId>
+                <version>${brave.open.tracing.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.zipkin.reporter2</groupId>
+                <artifactId>zipkin-reporter</artifactId>
+                <version>${zipkin.reporter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.zipkin.reporter2</groupId>
+                <artifactId>zipkin-sender-okhttp3</artifactId>
+                <version>${zipkin.reporter.version}</version>
+            </dependency>
+
+
         </dependencies>
     </dependencyManagement>
 
@@ -180,10 +220,18 @@
         <open.tracing.version>0.30.0</open.tracing.version>
         <slf4j.version>1.7.22</slf4j.version>
         <snake.yaml.version>1.19</snake.yaml.version>
+        <ballerina.lang.version>0.96.1-SNAPSHOT</ballerina.lang.version>
+        <testng.version>6.9.10</testng.version>
+
+        <!--Zipkin open tracing libraries-->
+        <brave.open.tracing.version>0.22.1</brave.open.tracing.version>
+        <zipkin.reporter.version>2.2.2</zipkin.reporter.version>
     </properties>
 
     <modules>
         <module>modules/tracing-core</module>
+        <module>modules/tracing-functions</module>
+        <module>modules/tracing-extensions</module>
     </modules>
 
 </project>

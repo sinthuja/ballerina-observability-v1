@@ -15,11 +15,27 @@
 * under the License.
 *
 */
-package org.ballerina.platform.tracing.core;
+package org.ballerina.tracing;
+
+import org.ballerinalang.model.values.BMap;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Constants class which defines all the constants defined.
+ * This provides the util functions to tracing related functions.
  */
-public class Constants {
-    public static final String BALLERINA_TRACE_CONFIG_KEY = "trace.config";
+public class Utils {
+    private Utils() {
+
+    }
+    public static Map<String, String> toStringMap(BMap map) {
+        Map<String, String> returnMap = new HashMap<>();
+        Set bIterator = map.keySet();
+        for (Object aKey : bIterator) {
+            returnMap.put(aKey.toString(), map.get(aKey).stringValue());
+        }
+        return returnMap;
+    }
 }

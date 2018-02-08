@@ -15,10 +15,10 @@
 * under the License.
 *
 */
-package org.ballerina.platform.tracing.core;
+package org.ballerina.tracing.core;
 
 import io.opentracing.Tracer;
-import org.ballerina.platform.tracing.core.config.InvalidConfigurationException;
+import org.ballerina.tracing.core.config.InvalidConfigurationException;
 
 import java.util.Properties;
 

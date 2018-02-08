@@ -16,7 +16,7 @@
 *
 */
 
-package org.ballerina.platform.tracing.core;
+package org.ballerina.tracing.core;
 
 import io.opentracing.ActiveSpan;
 import io.opentracing.BaseSpan;
@@ -25,10 +25,12 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.propagation.TextMap;
-import org.ballerina.platform.tracing.core.config.ConfigLoader;
-import org.ballerina.platform.tracing.core.config.InvalidConfigurationException;
-import org.ballerina.platform.tracing.core.config.OpenTracingConfig;
-import org.ballerina.platform.tracing.core.config.TracerConfig;
+import org.ballerina.tracing.core.config.ConfigLoader;
+import org.ballerina.tracing.core.config.InvalidConfigurationException;
+import org.ballerina.tracing.core.config.OpenTracingConfig;
+import org.ballerina.tracing.core.config.TracerConfig;
+import org.ballerina.tracing.core.config.TracingDepth;
+import org.ballerina.tracing.core.exception.UnknownSpanContextTypeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,8 +70,13 @@ public class OpenTracerFactory {
         return instance;
     }
 
-    public boolean isTracingEnabled() {
-        return this.openTracingConfig != null && !this.tracers.isEmpty();
+    public TracingDepth getTracingDepth() {
+        boolean tracersExists = this.openTracingConfig != null && !this.tracers.isEmpty();
+        if (tracersExists) {
+            return this.openTracingConfig.getDepth();
+        } else {
+            return TracingDepth.NONE;
+        }
     }
 
     public TracerConfig getTracingConfig(String tracerName) {
@@ -98,6 +105,9 @@ public class OpenTracerFactory {
 
     public Map<String, Object> extract(Format<TextMap> format, TextMap carrier) {
         Map<String, Object> spanContext = new HashMap<>();
+        if (format == null) {
+            format = Format.Builtin.HTTP_HEADERS;
+        }
         for (Map.Entry<String, Tracer> tracerEntry : this.tracers.entrySet()) {
             spanContext.put(tracerEntry.getKey(), tracerEntry.getValue().extract(format, carrier));
         }

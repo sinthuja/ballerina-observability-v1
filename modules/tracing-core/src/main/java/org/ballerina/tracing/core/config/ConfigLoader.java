@@ -15,9 +15,9 @@
 * under the License.
 *
 */
-package org.ballerina.platform.tracing.core.config;
+package org.ballerina.tracing.core.config;
 
-import org.ballerina.platform.tracing.core.Constants;
+import org.ballerina.tracing.core.Constants;
 import org.ballerinalang.config.ConfigRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,18 +45,22 @@ public class ConfigLoader {
         if (configLocation == null) {
             return null;
         } else {
-            File initialFile = new File(configLocation);
-            try (InputStream targetStream = new FileInputStream(initialFile)) {
-                return new Yaml().loadAs(targetStream, OpenTracingConfig.class);
-            } catch (FileNotFoundException e) {
-                logger.error("Unable to load the file provided with global configuration - " +
-                        Constants.BALLERINA_TRACE_CONFIG_KEY, e);
-                return null;
-            } catch (IOException e) {
-                logger.error("Unable to load the file provided with global configuration - " +
-                        Constants.BALLERINA_TRACE_CONFIG_KEY, e);
-                return null;
-            }
+            return load(configLocation);
+        }
+    }
+
+    public static OpenTracingConfig load(String configLocation) {
+        File initialFile = new File(configLocation);
+        try (InputStream targetStream = new FileInputStream(initialFile)) {
+            return new Yaml().loadAs(targetStream, OpenTracingConfig.class);
+        } catch (FileNotFoundException e) {
+            logger.error("Unable to load the file provided with global configuration - " +
+                    Constants.BALLERINA_TRACE_CONFIG_KEY, e);
+            return null;
+        } catch (IOException e) {
+            logger.error("Unable to load the file provided with global configuration - " +
+                    Constants.BALLERINA_TRACE_CONFIG_KEY, e);
+            return null;
         }
     }
 }

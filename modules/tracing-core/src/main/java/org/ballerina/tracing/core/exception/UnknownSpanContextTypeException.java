@@ -15,19 +15,16 @@
 * under the License.
 *
 */
-package org.ballerina.platform.tracing.core.config;
+package org.ballerina.tracing.core.exception;
+
 
 /**
- * This is the exception class which is thrown for any unexpected/wrong
- * configuration in the open tracer configs.
+ * This is the exception class which is thrown when the span context is unknown for
+ * {@link org.ballerina.tracing.core.OpenTracerFactory}
  */
-public class InvalidConfigurationException extends Exception {
+public class UnknownSpanContextTypeException extends RuntimeException {
 
-    public InvalidConfigurationException(String msg) {
-        super(msg);
-    }
-
-    public InvalidConfigurationException(String msg, Exception ex) {
-        super(msg, ex);
+    public UnknownSpanContextTypeException(String ex) {
+        super(ex);
     }
 }
