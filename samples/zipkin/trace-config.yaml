@@ -1,0 +1,8 @@
+depth: SERVICE_LEVEL
+tracers:
+  - name: zipkin
+    enabled: true
+    className: org.ballerina.tracing.extension.zipkin.OpenTracingExtension
+    configuration:
+      reporter.hostname: localhost
+      reporter.port: 9411
