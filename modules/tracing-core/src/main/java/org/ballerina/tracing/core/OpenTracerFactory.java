@@ -18,7 +18,6 @@
 
 package org.ballerina.tracing.core;
 
-import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
@@ -30,8 +29,6 @@ import org.ballerina.tracing.core.config.OpenTracingConfig;
 import org.ballerina.tracing.core.config.TracerConfig;
 import org.ballerina.tracing.core.config.TracingDepth;
 import org.ballerina.tracing.core.exception.UnknownSpanContextTypeException;
-import org.ballerina.tracing.core.scope.ClonableScope;
-import org.ballerina.tracing.core.scope.ClonableThreadLocalScopeManager;
 import org.ballerinalang.util.tracer.BallerinaTracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +47,7 @@ public class OpenTracerFactory implements BallerinaTracer {
     private static final Logger logger = LoggerFactory.getLogger(OpenTracerFactory.class);
     private static OpenTracerFactory instance = new OpenTracerFactory();
     private OpenTracingConfig openTracingConfig;
-    private Map<String, TracerWrapper> tracers;
+    private Map<String, Tracer> tracers;
 
     private OpenTracerFactory() {
         try {
@@ -83,7 +80,7 @@ public class OpenTracerFactory implements BallerinaTracer {
         return this.openTracingConfig.getTracer(tracerName);
     }
 
-    private void register(String tracerName, TracerWrapper tracer) {
+    private void register(String tracerName, Tracer tracer) {
         TracerConfig tracerConfig = getTracingConfig(tracerName);
         if (tracerConfig.isEnabled() && this.tracers.get(tracerName.toLowerCase(Locale.ENGLISH)) == null) {
             this.tracers.put(tracerName.toLowerCase(Locale.ENGLISH), tracer);
@@ -98,7 +95,7 @@ public class OpenTracerFactory implements BallerinaTracer {
                 OpenTracer openTracer = (OpenTracer) openTracerClass.newInstance();
                 Tracer tracer = openTracer.getTracer(tracerConfig.getName(),
                         tracerConfig.getConfiguration());
-                register(tracerConfig.getName(), new TracerWrapper(tracer, openTracer.supportParallelExec()));
+                register(tracerConfig.getName(), tracer);
             }
         }
     }
@@ -108,7 +105,7 @@ public class OpenTracerFactory implements BallerinaTracer {
         if (format == null) {
             format = Format.Builtin.HTTP_HEADERS;
         }
-        for (Map.Entry<String, TracerWrapper> tracerEntry : this.tracers.entrySet()) {
+        for (Map.Entry<String, Tracer> tracerEntry : this.tracers.entrySet()) {
             spanContext.put(tracerEntry.getKey(), tracerEntry.getValue().extract(format, carrier));
         }
         return spanContext;
@@ -152,7 +149,7 @@ public class OpenTracerFactory implements BallerinaTracer {
     public Map<String, Object> getActiveSpans() {
         Map<String, Object> activeSpanMap = new HashMap<>();
         boolean isActiveExists = false;
-        for (Map.Entry<String, TracerWrapper> tracerEntry : this.tracers.entrySet()) {
+        for (Map.Entry<String, Tracer> tracerEntry : this.tracers.entrySet()) {
             Span activeSpan = tracerEntry.getValue().activeSpan();
             if (activeSpan != null) {
                 isActiveExists = true;
@@ -166,34 +163,22 @@ public class OpenTracerFactory implements BallerinaTracer {
         }
     }
 
-    public Map<String, Object> getScopes() {
-        Map<String, Object> scopeMaps = new HashMap<>();
-        for (Map.Entry<String, TracerWrapper> tracerEntry : this.tracers.entrySet()) {
-            TracerWrapper tracerWrapper = tracerEntry.getValue();
-            if (!tracerWrapper.isParallelExec()) {
-                Scope activeScope = tracerWrapper.scopeManager().active();
-                if (activeScope != null) {
-                    scopeMaps.put(tracerEntry.getKey(), activeScope);
-                }
+    public Map<String, Object> getActiveSpanContext() {
+        Map<String, Object> activeSpanContextMap = new HashMap<>();
+        boolean isActiveExists = false;
+        for (Map.Entry<String, Tracer> tracerEntry : this.tracers.entrySet()) {
+            SpanContext activeSpanContext = tracerEntry.getValue().activeSpan().context();
+            if (activeSpanContext != null) {
+                isActiveExists = true;
             }
+            activeSpanContextMap.put(tracerEntry.getKey(), activeSpanContext);
         }
-        if (!scopeMaps.isEmpty()) {
-            return scopeMaps;
+        if (isActiveExists) {
+            return activeSpanContextMap;
         } else {
             return null;
         }
     }
-
-    public void setScopes(Map<String, Object> scopes) {
-        for (Map.Entry<String, Object> tracerEntry : scopes.entrySet()) {
-            TracerWrapper tracerWrapper = this.tracers.get(tracerEntry.getKey());
-            ClonableThreadLocalScopeManager scopeManager = (ClonableThreadLocalScopeManager)
-                    tracerWrapper.scopeManager();
-            ClonableScope scope = (ClonableScope) tracerEntry.getValue();
-            scopeManager.setScope(scope.copy());
-        }
-    }
-
 
     public void inject(Map<String, Span> activeSpanMap, Format<TextMap> format, TextMap carrier) {
         for (Map.Entry<String, Span> activeSpanEntry : activeSpanMap.entrySet()) {

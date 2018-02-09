@@ -31,11 +31,6 @@ public class TestOpenTracer implements OpenTracer {
     public Tracer getTracer(String tracerName, Properties configProperties) throws InvalidConfigurationException {
         return new TestTracer();
     }
-
-    @Override
-    public boolean supportParallelExec() {
-        return false;
-    }
 }
 
 final class TestTracer implements Tracer {

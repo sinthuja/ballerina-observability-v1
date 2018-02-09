@@ -66,11 +66,6 @@ public class OpenTracingExtension implements OpenTracer {
         return new DDTracer(ddTraceConfig);
     }
 
-    @Override
-    public boolean supportParallelExec() {
-        return false;
-    }
-
     private void validateConfiguration(Properties configuration) {
         setValidatedStringConfig(configuration, SERVICE_NAME, DEFAULT_SERVICE_NAME);
         setValidatedStringConfig(configuration, WRITER_TYPE, DEFAULT_WRITER_TYPE);

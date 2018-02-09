@@ -20,7 +20,6 @@ package org.ballerina.tracing.extension.jaeger;
 import io.opentracing.Tracer;
 import org.ballerina.tracing.core.OpenTracer;
 import org.ballerina.tracing.core.config.InvalidConfigurationException;
-import org.ballerina.tracing.core.scope.ClonableThreadLocalScopeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,12 +68,7 @@ public class OpenTracingExtension implements OpenTracer {
                         (Integer) configProperties.get(REPORTER_PORT_CONFIG),
                         (Integer) configProperties.get(REPORTER_FLUSH_INTERVAL_MS_CONFIG),
                         (Integer) configProperties.get(REPORTER_MAX_BUFFER_SPANS_CONFIG))
-        ).getTracerBuilder().withScopeManager(new ClonableThreadLocalScopeManager()).build();
-    }
-
-    @Override
-    public boolean supportParallelExec() {
-        return false;
+        ).getTracerBuilder().build();
     }
 
     private void validateConfiguration(Properties configuration) {
