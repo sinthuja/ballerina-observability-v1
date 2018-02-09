@@ -21,7 +21,7 @@ package org.ballerina.tracing.extension.jaeger;
  * This is the constants class that defines all the constants that are used by the {@link OpenTracingExtension}
  */
 public class Constants {
-    static final String JAEGER_TRACER_NAME = "jaeger";
+    static final String TRACER_NAME = "jaeger";
 
     static final String SAMPLER_TYPE_CONFIG = "sampler.type";
     static final String SAMPLER_PARAM_CONFIG = "sampler.param";

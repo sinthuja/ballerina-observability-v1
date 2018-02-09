@@ -15,8 +15,10 @@
 * under the License.
 *
 */
-package org.ballerina.tracing.extension.jaeger;
+package org.ballerina.tracing.extension.datadog;
 
+import datadog.opentracing.DDTracer;
+import datadog.trace.common.DDTraceConfig;
 import io.opentracing.Tracer;
 import org.ballerina.tracing.core.OpenTracer;
 import org.ballerina.tracing.core.config.InvalidConfigurationException;
@@ -25,21 +27,17 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-import static org.ballerina.tracing.extension.jaeger.Constants.DEFAULT_REPORTER_FLUSH_INTERVAL;
-import static org.ballerina.tracing.extension.jaeger.Constants.DEFAULT_REPORTER_HOSTNAME;
-import static org.ballerina.tracing.extension.jaeger.Constants.DEFAULT_REPORTER_LOG_SPANS;
-import static org.ballerina.tracing.extension.jaeger.Constants.DEFAULT_REPORTER_MAX_BUFFER_SPANS;
-import static org.ballerina.tracing.extension.jaeger.Constants.DEFAULT_REPORTER_PORT;
-import static org.ballerina.tracing.extension.jaeger.Constants.DEFAULT_SAMPLER_PARAM;
-import static org.ballerina.tracing.extension.jaeger.Constants.DEFAULT_SAMPLER_TYPE;
-import static org.ballerina.tracing.extension.jaeger.Constants.REPORTER_FLUSH_INTERVAL_MS_CONFIG;
-import static org.ballerina.tracing.extension.jaeger.Constants.REPORTER_HOST_NAME_CONFIG;
-import static org.ballerina.tracing.extension.jaeger.Constants.REPORTER_LOG_SPANS_CONFIG;
-import static org.ballerina.tracing.extension.jaeger.Constants.REPORTER_MAX_BUFFER_SPANS_CONFIG;
-import static org.ballerina.tracing.extension.jaeger.Constants.REPORTER_PORT_CONFIG;
-import static org.ballerina.tracing.extension.jaeger.Constants.SAMPLER_PARAM_CONFIG;
-import static org.ballerina.tracing.extension.jaeger.Constants.SAMPLER_TYPE_CONFIG;
-import static org.ballerina.tracing.extension.jaeger.Constants.TRACER_NAME;
+import static org.ballerina.tracing.extension.datadog.Constants.AGENT_HOST;
+import static org.ballerina.tracing.extension.datadog.Constants.AGENT_PORT;
+import static org.ballerina.tracing.extension.datadog.Constants.DEFAULT_AGENT_HOST;
+import static org.ballerina.tracing.extension.datadog.Constants.DEFAULT_AGENT_PORT;
+import static org.ballerina.tracing.extension.datadog.Constants.DEFAULT_PRIORITY_SAMPLING;
+import static org.ballerina.tracing.extension.datadog.Constants.DEFAULT_SERVICE_NAME;
+import static org.ballerina.tracing.extension.datadog.Constants.DEFAULT_WRITER_TYPE;
+import static org.ballerina.tracing.extension.datadog.Constants.PRIORITY_SAMPLING;
+import static org.ballerina.tracing.extension.datadog.Constants.SERVICE_NAME;
+import static org.ballerina.tracing.extension.datadog.Constants.TRACER_NAME;
+import static org.ballerina.tracing.extension.datadog.Constants.WRITER_TYPE;
 
 
 /**
@@ -51,34 +49,29 @@ public class OpenTracingExtension implements OpenTracer {
 
     @Override
     public Tracer getTracer(String tracerName, Properties configProperties) throws InvalidConfigurationException {
-        if (!tracerName.equalsIgnoreCase(TRACER_NAME)) {
+        if (!tracerName.equalsIgnoreCase(Constants.TRACER_NAME)) {
             throw new InvalidConfigurationException("Unexpected tracer name! " +
-                    "The tracer name supported by this extension is : " + TRACER_NAME + " but found : "
+                    "The tracer name supported by this extension is : " + Constants.TRACER_NAME + " but found : "
                     + tracerName);
         }
         validateConfiguration(configProperties);
-        return new com.uber.jaeger.Configuration(
-                org.ballerina.tracing.core.Constants.OPEN_TRACING_COMPONENT_NAME,
-                new com.uber.jaeger.Configuration.SamplerConfiguration(
-                        (String) configProperties.get(SAMPLER_TYPE_CONFIG)
-                        , (Integer) configProperties.get(SAMPLER_PARAM_CONFIG)),
-                new com.uber.jaeger.Configuration.ReporterConfiguration(
-                        (Boolean) configProperties.get(REPORTER_LOG_SPANS_CONFIG),
-                        (String) configProperties.get(REPORTER_HOST_NAME_CONFIG),
-                        (Integer) configProperties.get(REPORTER_PORT_CONFIG),
-                        (Integer) configProperties.get(REPORTER_FLUSH_INTERVAL_MS_CONFIG),
-                        (Integer) configProperties.get(REPORTER_MAX_BUFFER_SPANS_CONFIG))
-        ).getTracer();
+
+        DDTraceConfig ddTraceConfig = new DDTraceConfig();
+        ddTraceConfig.setProperty(SERVICE_NAME, (String) configProperties.get(SERVICE_NAME));
+        ddTraceConfig.setProperty(WRITER_TYPE, (String) configProperties.get(WRITER_TYPE));
+        ddTraceConfig.setProperty(AGENT_HOST, (String) configProperties.get(AGENT_HOST));
+        ddTraceConfig.setProperty(AGENT_PORT, String.valueOf(configProperties.get(AGENT_PORT)));
+        ddTraceConfig.setProperty(PRIORITY_SAMPLING,
+                Boolean.toString((Boolean) configProperties.get(PRIORITY_SAMPLING)));
+        return new DDTracer(ddTraceConfig);
     }
 
     private void validateConfiguration(Properties configuration) {
-        setValidatedStringConfig(configuration, SAMPLER_TYPE_CONFIG, DEFAULT_SAMPLER_TYPE);
-        setValidatedIntegerConfig(configuration, SAMPLER_PARAM_CONFIG, DEFAULT_SAMPLER_PARAM.intValue());
-        setValidatedBooleanConfig(configuration, REPORTER_LOG_SPANS_CONFIG, DEFAULT_REPORTER_LOG_SPANS);
-        setValidatedStringConfig(configuration, REPORTER_HOST_NAME_CONFIG, DEFAULT_REPORTER_HOSTNAME);
-        setValidatedIntegerConfig(configuration, REPORTER_PORT_CONFIG, DEFAULT_REPORTER_PORT);
-        setValidatedIntegerConfig(configuration, REPORTER_FLUSH_INTERVAL_MS_CONFIG, DEFAULT_REPORTER_FLUSH_INTERVAL);
-        setValidatedIntegerConfig(configuration, REPORTER_MAX_BUFFER_SPANS_CONFIG, DEFAULT_REPORTER_MAX_BUFFER_SPANS);
+        setValidatedStringConfig(configuration, SERVICE_NAME, DEFAULT_SERVICE_NAME);
+        setValidatedStringConfig(configuration, WRITER_TYPE, DEFAULT_WRITER_TYPE);
+        setValidatedStringConfig(configuration, AGENT_HOST, DEFAULT_AGENT_HOST);
+        setValidatedIntegerConfig(configuration, AGENT_PORT, DEFAULT_AGENT_PORT);
+        setValidatedBooleanConfig(configuration, PRIORITY_SAMPLING, DEFAULT_PRIORITY_SAMPLING);
     }
 
     private void setValidatedStringConfig(Properties configuration, String configName, String defaultValue) {

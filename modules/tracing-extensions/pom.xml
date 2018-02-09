@@ -36,6 +36,7 @@
     <modules>
         <module>zipkin</module>
         <module>jaeger</module>
+        <module>datadog</module>
     </modules>
 
 </project>
