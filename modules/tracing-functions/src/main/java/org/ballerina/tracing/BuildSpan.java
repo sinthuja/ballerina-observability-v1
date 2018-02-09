@@ -31,6 +31,9 @@ import org.ballerinalang.natives.AbstractNativeFunction;
 import org.ballerinalang.natives.annotations.BallerinaFunction;
 import org.ballerinalang.natives.annotations.ReturnType;
 import org.ballerinalang.net.http.HttpUtil;
+import org.ballerinalang.util.tracer.TracerRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.transport.http.netty.message.HTTPCarbonMessage;
 
 import java.util.List;
@@ -47,6 +50,8 @@ import java.util.Map;
 )
 
 public class BuildSpan extends AbstractNativeFunction {
+    private static final Logger logger = LoggerFactory.getLogger(OpenTracerFactory.class);
+
 
     @Override
     public BValue[] execute(Context context) {
@@ -58,15 +63,24 @@ public class BuildSpan extends AbstractNativeFunction {
         boolean hasParent = true;
         Map<String, Object> spanContext = OpenTracerFactory.getInstance().getActiveSpans();
         if (spanContext == null) {
-            HTTPCarbonMessage carbonMessage = HttpUtil.getCarbonMsg(httpRequest, null);
-            spanContext = OpenTracerFactory.getInstance().extract(null,
-                    new RequestExtractor(carbonMessage.getHeaders().iteratorAsString()));
             hasParent = false;
+            Map<String, Object> scopeMap = (Map<String, Object>) context.getProperty(Utils.getPropertyNameForParentSpanHolder());
+            if (scopeMap != null) {
+                OpenTracerFactory.getInstance().setScopes(scopeMap);
+                spanContext = OpenTracerFactory.getInstance().getActiveSpans();
+            } else {
+                HTTPCarbonMessage carbonMessage = HttpUtil.getCarbonMsg(httpRequest, null);
+                spanContext = OpenTracerFactory.getInstance().extract(null,
+                        new RequestExtractor(carbonMessage.getHeaders().iteratorAsString()));
+            }
         }
+
         List<Span> spanList = OpenTracerFactory.getInstance().buildSpan(spanName, spanContext,
                 Utils.toStringMap(tags),
                 makeActive);
         //TODO: get id from the invocationContext, and pass it.
+        System.out.println("Function - > " + TracerRegistry.getInstance().getTracer());
+        System.out.print("Build span - " + spanName + " , Thread ID - > " + Thread.currentThread().getId());
         if (hasParent) {
             return getBValues(new BString(SpanHolder.getInstance().onBuildSpan("xxxxxxx", spanList, spanContext)));
         } else {

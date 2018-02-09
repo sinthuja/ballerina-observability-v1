@@ -15,53 +15,52 @@
 * under the License.
 *
 */
+package org.ballerina.tracing.core;
 
 import io.opentracing.ScopeManager;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
-import org.ballerina.tracing.core.OpenTracer;
-import org.ballerina.tracing.core.config.InvalidConfigurationException;
 
-import java.util.Properties;
+/**
+ * This is the tracer wrapper to handle the parallism in for the tracers which doesn't support it.
+ */
+public class TracerWrapper implements Tracer {
+    private Tracer tracer;
+    private boolean parallelExec;
 
-public class TestOpenTracer implements OpenTracer {
-    @Override
-    public Tracer getTracer(String tracerName, Properties configProperties) throws InvalidConfigurationException {
-        return new TestTracer();
+    public TracerWrapper(Tracer tracer, boolean supportParallelExec) {
+        this.tracer = tracer;
+        this.parallelExec = supportParallelExec;
     }
-
-    @Override
-    public boolean supportParallelExec() {
-        return false;
-    }
-}
-
-final class TestTracer implements Tracer {
 
     @Override
     public ScopeManager scopeManager() {
-        return null;
+        return this.tracer.scopeManager();
     }
 
     @Override
     public Span activeSpan() {
-        return null;
+        return this.tracer.activeSpan();
     }
 
     @Override
-    public SpanBuilder buildSpan(String operationName) {
-        return null;
+    public SpanBuilder buildSpan(String s) {
+        return this.tracer.buildSpan(s);
     }
 
     @Override
-    public <C> void inject(SpanContext spanContext, Format<C> format, C carrier) {
-
+    public <C> void inject(SpanContext spanContext, Format<C> format, C c) {
+        this.tracer.inject(spanContext, format, c);
     }
 
     @Override
-    public <C> SpanContext extract(Format<C> format, C carrier) {
-        return null;
+    public <C> SpanContext extract(Format<C> format, C c) {
+        return this.tracer.extract(format, c);
+    }
+
+    public boolean isParallelExec() {
+        return parallelExec;
     }
 }

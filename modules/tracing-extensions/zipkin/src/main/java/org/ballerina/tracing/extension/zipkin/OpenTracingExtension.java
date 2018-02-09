@@ -64,6 +64,11 @@ public class OpenTracingExtension implements OpenTracer {
                 .build());
     }
 
+    @Override
+    public boolean supportParallelExec() {
+        return true;
+    }
+
     private void validateConfiguration(Properties configuration) {
         setValidatedStringConfig(configuration, REPORTER_HOST_NAME_CONFIG, DEFAULT_REPORTER_HOSTNAME);
         setValidatedIntegerConfig(configuration, REPORTER_PORT_CONFIG, DEFAULT_REPORTER_PORT);

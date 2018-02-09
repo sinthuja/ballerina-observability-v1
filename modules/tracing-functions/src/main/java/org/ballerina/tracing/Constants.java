@@ -17,30 +17,9 @@
 */
 package org.ballerina.tracing;
 
-import org.ballerinalang.model.values.BMap;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 /**
- * This provides the util functions to tracing related functions.
+ * This is the constants class.
  */
-public class Utils {
-    private Utils() {
-
-    }
-
-    public static Map<String, String> toStringMap(BMap map) {
-        Map<String, String> returnMap = new HashMap<>();
-        Set bIterator = map.keySet();
-        for (Object aKey : bIterator) {
-            returnMap.put(aKey.toString(), map.get(aKey).stringValue());
-        }
-        return returnMap;
-    }
-
-    public static String getPropertyNameForParentSpanHolder() {
-        return Constants.SPAN_HOLDER_PROP_NAME + "_" + Thread.currentThread().getId();
-    }
+public class Constants {
+    public static final String SPAN_HOLDER_PROP_NAME = "TRACING_SCOPES";
 }

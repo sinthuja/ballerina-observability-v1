@@ -37,4 +37,6 @@ public interface OpenTracer {
      * if the configuration or tracer name is invalid.
      */
     Tracer getTracer(String tracerName, Properties configProperties) throws InvalidConfigurationException;
+
+    boolean supportParallelExec();
 }

@@ -44,6 +44,7 @@ public class FinishSpan extends AbstractNativeFunction {
         String spanId = getStringArgument(context, 0);
         SpanHolder.SpanReference spanRef = SpanHolder.getInstance().onFinishSpan("xxxxxxx", spanId);
         OpenTracerFactory.getInstance().finishSpan(spanRef.getSpans(), spanRef.getParent());
+        System.out.print("Finish Span.... ");
         return getBValues(new BBoolean(true));
     }
 
