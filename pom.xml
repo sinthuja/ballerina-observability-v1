@@ -140,6 +140,14 @@
             </dependency>
             <!--End of Jaeger dependencies-->
 
+            <!-- Start of Datadog dependencies-->
+            <dependency>
+                <groupId>com.datadoghq</groupId>
+                <artifactId>dd-trace-ot</artifactId>
+                <version>${datadog.version}</version>
+            </dependency>
+            <!--End of Datadog dependencies-->
+
         </dependencies>
     </dependencyManagement>
 
@@ -242,6 +250,9 @@
 
         <!--Jaeger open tracing libraries-->
         <jaeger.version>0.24.0</jaeger.version>
+
+        <!--Datadog open tracing libraries-->
+        <datadog.version>0.3.0</datadog.version>
     </properties>
 
     <modules>

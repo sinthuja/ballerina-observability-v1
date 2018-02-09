@@ -1,0 +1,7 @@
+libthrift-0.11.0.jar
+jackson-core-2.9.4.jar
+jackson-dataformat-msgpack-0.8.14.jar
+guava-23.0.jar
+jackson-databind-2.9.4.jar
+jackson-annotations-2.9.4.jar
+msgpack-core-0.8.14.jar
