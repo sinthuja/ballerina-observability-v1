@@ -146,7 +146,7 @@ public class OpenTracerFactory implements BallerinaTracer {
         spanList.forEach(Span::finish);
     }
 
-    public Map<String, Object> getActiveSpans() {
+    public ActiveSpanResponse getActiveSpans() {
         Map<String, Object> activeSpanMap = new HashMap<>();
         boolean isActiveExists = false;
         for (Map.Entry<String, Tracer> tracerEntry : this.tracers.entrySet()) {
@@ -154,10 +154,10 @@ public class OpenTracerFactory implements BallerinaTracer {
             if (activeSpan != null) {
                 isActiveExists = true;
             }
-            activeSpanMap.put(tracerEntry.getKey(), tracerEntry.getValue().activeSpan());
+            activeSpanMap.put(tracerEntry.getKey(), activeSpan);
         }
         if (isActiveExists) {
-            return activeSpanMap;
+            return new ActiveSpanResponse(activeSpanMap);
         } else {
             return null;
         }
@@ -197,7 +197,7 @@ public class OpenTracerFactory implements BallerinaTracer {
                     if (parentSpan.getValue() instanceof Span) {
                         this.tracers.get(parentSpan.getKey().toLowerCase(Locale.ENGLISH)).scopeManager().
                                 activate((Span) parentSpan.getValue(), false);
-                    } else {
+                    } else if (!(parentSpan.getValue() instanceof SpanContext)) {
                         throw new UnknownSpanContextTypeException("Only " + Span.class
                                 + " as parent span can be captured " +
                                 "and activated! But found " + parentSpan.getClass());
@@ -207,4 +207,36 @@ public class OpenTracerFactory implements BallerinaTracer {
         }
     }
 
+    /**
+     * This is the active span response which encapsulates the actual span, and the completeness of the response.
+     */
+    public static class ActiveSpanResponse {
+        private Map<String, Object> spans;
+        private boolean hasAllSpans;
+        private List<String> tracerKeys;
+
+        public ActiveSpanResponse(Map<String, Object> spans) {
+            this.spans = spans;
+            this.hasAllSpans = true;
+            this.tracerKeys = new ArrayList<>();
+            for (Map.Entry<String, Object> span : this.spans.entrySet()) {
+                if (span.getValue() == null) {
+                    this.hasAllSpans = false;
+                    this.tracerKeys.add(span.getKey());
+                }
+            }
+        }
+
+        public Map<String, Object> getSpans() {
+            return spans;
+        }
+
+        public boolean isHasAllSpans() {
+            return hasAllSpans;
+        }
+
+        public List<String> getTracerKeys() {
+            return tracerKeys;
+        }
+    }
 }

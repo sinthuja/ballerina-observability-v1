@@ -61,14 +61,24 @@ public class BuildSpan extends AbstractNativeFunction {
         boolean makeActive = getBooleanArgument(context, 0);
 
         boolean hasParent = true;
-        Map<String, Object> spanContext = OpenTracerFactory.getInstance().getActiveSpans();
-        if (spanContext == null) {
+        OpenTracerFactory.ActiveSpanResponse response = OpenTracerFactory.getInstance().getActiveSpans();
+        Map<String, Object> spanContext;
+        if (response == null) {
             hasParent = false;
             spanContext = (Map<String, Object>) context.getProperty(Utils.getPropertyNameForParentSpanHolder());
             if (spanContext == null) {
                 HTTPCarbonMessage carbonMessage = HttpUtil.getCarbonMsg(httpRequest, null);
                 spanContext = OpenTracerFactory.getInstance().extract(null,
                         new RequestExtractor(carbonMessage.getHeaders().iteratorAsString()));
+            }
+        } else {
+            spanContext = response.getSpans();
+            if (!response.isHasAllSpans()) {
+                Map<String, Object> workerSpans = (Map<String, Object>)
+                        context.getProperty(Utils.getPropertyNameForParentSpanHolder());
+                for (String tracerKey : response.getTracerKeys()) {
+                    spanContext.put(tracerKey, workerSpans.get(tracerKey));
+                }
             }
         }
 
