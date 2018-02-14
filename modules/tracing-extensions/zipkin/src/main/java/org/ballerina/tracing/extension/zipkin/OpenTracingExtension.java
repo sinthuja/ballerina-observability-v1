@@ -21,6 +21,7 @@ import brave.Tracing;
 import brave.opentracing.BraveTracer;
 import io.opentracing.Tracer;
 import org.ballerina.tracing.core.OpenTracer;
+import org.ballerina.tracing.core.SpanFinishRequest;
 import org.ballerina.tracing.core.config.InvalidConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +63,11 @@ public class OpenTracingExtension implements OpenTracer {
                 .localServiceName(org.ballerina.tracing.core.Constants.OPEN_TRACING_COMPONENT_NAME)
                 .spanReporter(reporter)
                 .build());
+    }
+
+    @Override
+    public boolean handleFinish(SpanFinishRequest spanFinishRequest) {
+        return false;
     }
 
     private void validateConfiguration(Properties configuration) {

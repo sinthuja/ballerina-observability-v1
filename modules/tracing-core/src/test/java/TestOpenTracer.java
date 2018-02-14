@@ -22,6 +22,7 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import org.ballerina.tracing.core.OpenTracer;
+import org.ballerina.tracing.core.SpanFinishRequest;
 import org.ballerina.tracing.core.config.InvalidConfigurationException;
 
 import java.util.Properties;
@@ -30,6 +31,11 @@ public class TestOpenTracer implements OpenTracer {
     @Override
     public Tracer getTracer(String tracerName, Properties configProperties) throws InvalidConfigurationException {
         return new TestTracer();
+    }
+
+    @Override
+    public boolean handleFinish(SpanFinishRequest spanFinishRequest) {
+        return false;
     }
 }
 

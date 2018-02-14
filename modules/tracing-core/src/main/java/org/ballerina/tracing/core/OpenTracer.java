@@ -37,4 +37,15 @@ public interface OpenTracer {
      * if the configuration or tracer name is invalid.
      */
     Tracer getTracer(String tracerName, Properties configProperties) throws InvalidConfigurationException;
+
+    /**
+     * This method can handle the customized approach for finishing span by it self, and in that case the
+     * return value will be true, therefore the {@link OpenTracerFactory} will not call the span.finish() by it self.
+     * In case if the spefic tracers doesn't have any custom implementation required, then it can simply return false,
+     * and hence {@link OpenTracerFactory} will handle finishing the span.
+     *
+     * @param spanFinishRequest The details of the span which supposed to be finished.
+     * @return boolean value which represents whether the tracer impl will handle the finishSpan operation.
+     */
+    boolean handleFinish(SpanFinishRequest spanFinishRequest);
 }

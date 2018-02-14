@@ -86,8 +86,6 @@ public class BuildSpan extends AbstractNativeFunction {
                 Utils.toStringMap(tags),
                 makeActive);
         //TODO: get id from the invocationContext, and pass it.
-        System.out.println("Function - > " + TracerRegistry.getInstance().getTracer());
-        System.out.print("Build span - " + spanName + " , Thread ID - > " + Thread.currentThread().getId());
         if (hasParent) {
             return getBValues(new BString(SpanHolder.getInstance().onBuildSpan("xxxxxxx", spanList, spanContext)));
         } else {

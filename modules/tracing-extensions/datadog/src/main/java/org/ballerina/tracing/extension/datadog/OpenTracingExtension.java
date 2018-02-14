@@ -17,15 +17,22 @@
 */
 package org.ballerina.tracing.extension.datadog;
 
+import datadog.opentracing.DDSpan;
 import datadog.opentracing.DDTracer;
 import datadog.trace.common.DDTraceConfig;
+import datadog.trace.common.util.Clock;
 import io.opentracing.Tracer;
 import org.ballerina.tracing.core.OpenTracer;
+import org.ballerina.tracing.core.SpanFinishRequest;
 import org.ballerina.tracing.core.config.InvalidConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Queue;
 
 import static org.ballerina.tracing.extension.datadog.Constants.AGENT_HOST;
 import static org.ballerina.tracing.extension.datadog.Constants.AGENT_PORT;
@@ -44,6 +51,7 @@ import static org.ballerina.tracing.extension.datadog.Constants.WRITER_TYPE;
  * This is the open tracing extension class for {@link OpenTracer}
  */
 public class OpenTracingExtension implements OpenTracer {
+    private Map<Long, SpanFinishRequest> spanHolder = new HashMap<>();
 
     private static final Logger logger = LoggerFactory.getLogger(OpenTracingExtension.class);
 
@@ -64,6 +72,41 @@ public class OpenTracingExtension implements OpenTracer {
         ddTraceConfig.setProperty(PRIORITY_SAMPLING,
                 Boolean.toString((Boolean) configProperties.get(PRIORITY_SAMPLING)));
         return new DDTracer(ddTraceConfig);
+    }
+
+    public boolean handleFinish(SpanFinishRequest spanFinishRequest) {
+        if (spanFinishRequest != null && spanFinishRequest.getSpan() instanceof DDSpan) {
+            DDSpan ddSpan = (DDSpan) spanFinishRequest.getSpan();
+            if (spanFinishRequest.getFinishTime() == 0L) {
+                spanFinishRequest.setFinishTime(Clock.currentMicroTime());
+            }
+            if (ddSpan.isRootSpan()) {
+                Queue spans = ddSpan.context().getTrace();
+                Iterator iterator = spans.iterator();
+                boolean canFinish = true;
+                while (iterator.hasNext()) {
+                    DDSpan childSpan = (DDSpan) iterator.next();
+                    if (ddSpan != childSpan && childSpan.getDurationNano() == 0L) {
+                        this.spanHolder.putIfAbsent(ddSpan.getSpanId(), spanFinishRequest);
+                        canFinish = false;
+                        break;
+                    }
+                }
+                if (canFinish) {
+                    ddSpan.finish(spanFinishRequest.getFinishTime());
+                }
+            } else {
+                ddSpan.finish(spanFinishRequest.getFinishTime());
+                handleFinish(this.spanHolder.remove(getRootParentId(ddSpan)));
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private Long getRootParentId(DDSpan span) {
+        return span.context().getTrace().peek().getSpanId();
     }
 
     private void validateConfiguration(Properties configuration) {

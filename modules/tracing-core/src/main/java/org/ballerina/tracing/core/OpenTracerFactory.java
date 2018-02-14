@@ -47,6 +47,7 @@ public class OpenTracerFactory implements BallerinaTracer {
     private static final Logger logger = LoggerFactory.getLogger(OpenTracerFactory.class);
     private static OpenTracerFactory instance = new OpenTracerFactory();
     private OpenTracingConfig openTracingConfig;
+    private List<OpenTracer> openTracers;
     private Map<String, Tracer> tracers;
 
     private OpenTracerFactory() {
@@ -54,6 +55,7 @@ public class OpenTracerFactory implements BallerinaTracer {
             this.openTracingConfig = ConfigLoader.load();
             if (this.openTracingConfig != null) {
                 this.tracers = new HashMap<>();
+                this.openTracers = new ArrayList<>();
                 loadTracers();
             }
         } catch (IllegalAccessException
@@ -93,6 +95,7 @@ public class OpenTracerFactory implements BallerinaTracer {
             if (tracerConfig.isEnabled()) {
                 Class<?> openTracerClass = Class.forName(tracerConfig.getClassName()).asSubclass(OpenTracer.class);
                 OpenTracer openTracer = (OpenTracer) openTracerClass.newInstance();
+                this.openTracers.add(openTracer);
                 Tracer tracer = openTracer.getTracer(tracerConfig.getName(),
                         tracerConfig.getConfiguration());
                 register(tracerConfig.getName(), tracer);
@@ -143,7 +146,19 @@ public class OpenTracerFactory implements BallerinaTracer {
 
 
     private void finishSpan(List<Span> spanList) {
-        spanList.forEach(Span::finish);
+        for (Span span : spanList) {
+            SpanFinishRequest finishRequest = new SpanFinishRequest(span);
+            boolean spanFinished = false;
+            for (OpenTracer openTracer : this.openTracers) {
+                if (openTracer.handleFinish(finishRequest)) {
+                    spanFinished = true;
+                    break;
+                }
+            }
+            if (!spanFinished) {
+                span.finish();
+            }
+        }
     }
 
     public ActiveSpanResponse getActiveSpans() {
