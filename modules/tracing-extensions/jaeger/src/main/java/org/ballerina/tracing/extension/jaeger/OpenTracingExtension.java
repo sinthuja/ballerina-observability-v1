@@ -17,6 +17,7 @@
 */
 package org.ballerina.tracing.extension.jaeger;
 
+import io.opentracing.Span;
 import io.opentracing.Tracer;
 import org.ballerina.tracing.core.OpenTracer;
 import org.ballerina.tracing.core.SpanFinishRequest;
@@ -75,6 +76,11 @@ public class OpenTracingExtension implements OpenTracer {
     @Override
     public boolean handleFinish(SpanFinishRequest spanFinishRequest) {
         return false;
+    }
+
+    @Override
+    public Span getSpanWithTraceId(long traceId, Span span) {
+        return span;
     }
 
     private void validateConfiguration(Properties configuration) {

@@ -37,6 +37,11 @@ public class TestOpenTracer implements OpenTracer {
     public boolean handleFinish(SpanFinishRequest spanFinishRequest) {
         return false;
     }
+
+    @Override
+    public Span getSpanWithTraceId(long traceId, Span span) {
+        return null;
+    }
 }
 
 final class TestTracer implements Tracer {

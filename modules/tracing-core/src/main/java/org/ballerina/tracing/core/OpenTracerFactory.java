@@ -47,7 +47,7 @@ public class OpenTracerFactory implements BallerinaTracer {
     private static final Logger logger = LoggerFactory.getLogger(OpenTracerFactory.class);
     private static OpenTracerFactory instance = new OpenTracerFactory();
     private OpenTracingConfig openTracingConfig;
-    private List<OpenTracer> openTracers;
+    private Map<String, OpenTracer> openTracers;
     private Map<String, Tracer> tracers;
 
     private OpenTracerFactory() {
@@ -55,7 +55,7 @@ public class OpenTracerFactory implements BallerinaTracer {
             this.openTracingConfig = ConfigLoader.load();
             if (this.openTracingConfig != null) {
                 this.tracers = new HashMap<>();
-                this.openTracers = new ArrayList<>();
+                this.openTracers = new HashMap<>();
                 loadTracers();
             }
         } catch (IllegalAccessException
@@ -95,7 +95,7 @@ public class OpenTracerFactory implements BallerinaTracer {
             if (tracerConfig.isEnabled()) {
                 Class<?> openTracerClass = Class.forName(tracerConfig.getClassName()).asSubclass(OpenTracer.class);
                 OpenTracer openTracer = (OpenTracer) openTracerClass.newInstance();
-                this.openTracers.add(openTracer);
+                this.openTracers.put(tracerConfig.getName(), openTracer);
                 Tracer tracer = openTracer.getTracer(tracerConfig.getName(),
                         tracerConfig.getConfiguration());
                 register(tracerConfig.getName(), tracer);
@@ -114,7 +114,7 @@ public class OpenTracerFactory implements BallerinaTracer {
         return spanContext;
     }
 
-    public List<Span> buildSpan(String invocationId, String spanName, Map<String, Object> spanContextMap,
+    public List<Span> buildSpan(long invocationId, String spanName, Map<String, Object> spanContextMap,
                                 Map<String, String> tags,
                                 boolean makeActive) {
         List<Span> spanList = new ArrayList<>();
@@ -138,7 +138,12 @@ public class OpenTracerFactory implements BallerinaTracer {
                 }
             }
             Span span = spanBuilder.start();
-            span.setBaggageItem(Constants.INVOCATION_ID_PROPERTY, invocationId);
+            if (spanContextEntry.getValue() == null) {
+                // set the invocation Id as trace id, only when there is no parent.
+                OpenTracer openTracer = this.openTracers.get(spanContextEntry.getKey().toString());
+                span = openTracer.getSpanWithTraceId(invocationId, span);
+            }
+            span.setBaggageItem(Constants.INVOCATION_ID_PROPERTY, String.valueOf(invocationId));
             if (makeActive) {
                 tracer.scopeManager().activate(span, false);
             }
@@ -152,8 +157,8 @@ public class OpenTracerFactory implements BallerinaTracer {
         for (Span span : spanList) {
             SpanFinishRequest finishRequest = new SpanFinishRequest(span);
             boolean spanFinished = false;
-            for (OpenTracer openTracer : this.openTracers) {
-                if (openTracer.handleFinish(finishRequest)) {
+            for (Map.Entry<String, OpenTracer> openTracer : this.openTracers.entrySet()) {
+                if (openTracer.getValue().handleFinish(finishRequest)) {
                     spanFinished = true;
                     break;
                 }

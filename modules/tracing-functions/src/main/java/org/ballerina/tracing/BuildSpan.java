@@ -30,14 +30,11 @@ import org.ballerinalang.natives.AbstractNativeFunction;
 import org.ballerinalang.natives.annotations.BallerinaFunction;
 import org.ballerinalang.natives.annotations.ReturnType;
 import org.ballerinalang.net.http.HttpUtil;
-import org.ballerinalang.util.tracer.TracerRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wso2.transport.http.netty.message.HTTPCarbonMessage;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This is function which implements the buildSpan method for tracing.
@@ -50,18 +47,18 @@ import java.util.UUID;
 )
 
 public class BuildSpan extends AbstractNativeFunction {
-    private static final Logger logger = LoggerFactory.getLogger(OpenTracerFactory.class);
-
-
     @Override
     public BValue[] execute(Context context) {
         BStruct httpRequest = (BStruct) getRefArgument(context, 0);
         BMap tags = (BMap) getRefArgument(context, 1);
         String spanName = getStringArgument(context, 0);
         boolean makeActive = getBooleanArgument(context, 0);
-        String invocationId;
+        long invocationId;
         if (context.getProperties().get(Constants.INVOCATION_ID_PROPERTY) != null) {
-            invocationId = context.getProperties().get(Constants.INVOCATION_ID_PROPERTY).toString();
+            invocationId = (Long) context.getProperties().get(Constants.INVOCATION_ID_PROPERTY);
+        } else {
+            invocationId = ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE);
+            context.setProperty(Constants.INVOCATION_ID_PROPERTY, invocationId);
         }
 
         boolean hasParent = true;
@@ -85,7 +82,6 @@ public class BuildSpan extends AbstractNativeFunction {
                 }
             }
         }
-
 
 
         List<Span> spanList = OpenTracerFactory.getInstance().buildSpan(invocationId, spanName, spanContext,

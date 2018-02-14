@@ -21,6 +21,7 @@ import datadog.opentracing.DDSpan;
 import datadog.opentracing.DDTracer;
 import datadog.trace.common.DDTraceConfig;
 import datadog.trace.common.util.Clock;
+import io.opentracing.Span;
 import io.opentracing.Tracer;
 import org.ballerina.tracing.core.OpenTracer;
 import org.ballerina.tracing.core.SpanFinishRequest;
@@ -71,7 +72,7 @@ public class OpenTracingExtension implements OpenTracer {
         ddTraceConfig.setProperty(AGENT_PORT, String.valueOf(configProperties.get(AGENT_PORT)));
         ddTraceConfig.setProperty(PRIORITY_SAMPLING,
                 Boolean.toString((Boolean) configProperties.get(PRIORITY_SAMPLING)));
-        return new  DDTracer(ddTraceConfig);
+        return new DDTracer(ddTraceConfig);
     }
 
     public boolean handleFinish(SpanFinishRequest spanFinishRequest) {
@@ -103,6 +104,14 @@ public class OpenTracingExtension implements OpenTracer {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public Span getSpanWithTraceId(long traceId, Span span) {
+        if (span instanceof DDSpan) {
+            return DDSpanWrapper.getSpan(traceId, (DDSpan) span);
+        }
+        return span;
     }
 
     private Long getRootParentId(DDSpan span) {

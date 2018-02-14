@@ -17,6 +17,7 @@
 */
 package org.ballerina.tracing.core;
 
+import io.opentracing.Span;
 import io.opentracing.Tracer;
 import org.ballerina.tracing.core.config.InvalidConfigurationException;
 
@@ -48,4 +49,7 @@ public interface OpenTracer {
      * @return boolean value which represents whether the tracer impl will handle the finishSpan operation.
      */
     boolean handleFinish(SpanFinishRequest spanFinishRequest);
+
+
+    Span getSpanWithTraceId (long traceId, Span span);
 }
