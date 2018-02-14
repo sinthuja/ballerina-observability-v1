@@ -23,4 +23,5 @@ package org.ballerina.tracing.core;
 public class Constants {
     public static final String BALLERINA_TRACE_CONFIG_KEY = "trace.config";
     public static final String OPEN_TRACING_COMPONENT_NAME = "Ballerina";
+    public static final String INVOCATION_ID_PROPERTY = "invocation_id";
 }

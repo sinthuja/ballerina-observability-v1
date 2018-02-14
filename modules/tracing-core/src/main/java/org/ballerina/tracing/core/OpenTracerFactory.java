@@ -114,7 +114,8 @@ public class OpenTracerFactory implements BallerinaTracer {
         return spanContext;
     }
 
-    public List<Span> buildSpan(String spanName, Map<String, Object> spanContextMap, Map<String, String> tags,
+    public List<Span> buildSpan(String invocationId, String spanName, Map<String, Object> spanContextMap,
+                                Map<String, String> tags,
                                 boolean makeActive) {
         List<Span> spanList = new ArrayList<>();
         for (Map.Entry spanContextEntry : spanContextMap.entrySet()) {
@@ -123,6 +124,7 @@ public class OpenTracerFactory implements BallerinaTracer {
             for (Map.Entry<String, String> tag : tags.entrySet()) {
                 spanBuilder = spanBuilder.withTag(tag.getKey(), tag.getValue());
             }
+            spanBuilder.withTag(Constants.INVOCATION_ID_PROPERTY, invocationId);
             if (spanContextEntry.getValue() != null) {
                 if (spanContextEntry.getValue() instanceof SpanContext) {
                     spanBuilder = spanBuilder.asChildOf((SpanContext) spanContextEntry.getValue());
@@ -136,6 +138,7 @@ public class OpenTracerFactory implements BallerinaTracer {
                 }
             }
             Span span = spanBuilder.start();
+            span.setBaggageItem(Constants.INVOCATION_ID_PROPERTY, invocationId);
             if (makeActive) {
                 tracer.scopeManager().activate(span, false);
             }

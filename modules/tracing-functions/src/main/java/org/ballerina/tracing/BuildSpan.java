@@ -18,9 +18,8 @@
 package org.ballerina.tracing;
 
 import io.opentracing.Span;
-import org.ballerina.tracing.core.OpenTracerFactory;
-import org.ballerina.tracing.core.RequestExtractor;
-import org.ballerina.tracing.core.SpanHolder;
+import org.ballerina.tracing.core.*;
+import org.ballerina.tracing.core.Constants;
 import org.ballerinalang.bre.Context;
 import org.ballerinalang.model.types.TypeKind;
 import org.ballerinalang.model.values.BMap;
@@ -38,6 +37,7 @@ import org.wso2.transport.http.netty.message.HTTPCarbonMessage;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * This is function which implements the buildSpan method for tracing.
@@ -59,6 +59,10 @@ public class BuildSpan extends AbstractNativeFunction {
         BMap tags = (BMap) getRefArgument(context, 1);
         String spanName = getStringArgument(context, 0);
         boolean makeActive = getBooleanArgument(context, 0);
+        String invocationId;
+        if (context.getProperties().get(Constants.INVOCATION_ID_PROPERTY) != null) {
+            invocationId = context.getProperties().get(Constants.INVOCATION_ID_PROPERTY).toString();
+        }
 
         boolean hasParent = true;
         OpenTracerFactory.ActiveSpanResponse response = OpenTracerFactory.getInstance().getActiveSpans();
@@ -82,7 +86,9 @@ public class BuildSpan extends AbstractNativeFunction {
             }
         }
 
-        List<Span> spanList = OpenTracerFactory.getInstance().buildSpan(spanName, spanContext,
+
+
+        List<Span> spanList = OpenTracerFactory.getInstance().buildSpan(invocationId, spanName, spanContext,
                 Utils.toStringMap(tags),
                 makeActive);
         //TODO: get id from the invocationContext, and pass it.

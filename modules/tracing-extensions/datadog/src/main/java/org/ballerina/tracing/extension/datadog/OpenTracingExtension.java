@@ -71,7 +71,7 @@ public class OpenTracingExtension implements OpenTracer {
         ddTraceConfig.setProperty(AGENT_PORT, String.valueOf(configProperties.get(AGENT_PORT)));
         ddTraceConfig.setProperty(PRIORITY_SAMPLING,
                 Boolean.toString((Boolean) configProperties.get(PRIORITY_SAMPLING)));
-        return new DDTracer(ddTraceConfig);
+        return new  DDTracer(ddTraceConfig);
     }
 
     public boolean handleFinish(SpanFinishRequest spanFinishRequest) {
